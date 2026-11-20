@@ -1,187 +1,288 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>عاصم AI | تحويل النص إلى صوت</title>
-<style>
-*{box-sizing:border-box}
-body{
- margin:0;background:#081326;color:white;
- font-family:Arial,sans-serif;
-}
-header{
- padding:22px 18px;background:#101f39;
- border-bottom:1px solid #b58b43;
-}
-.logo{font-size:27px;font-weight:bold;color:#e5bd68}
-.logo span{color:white}
-header p{color:#aab7ca;font-size:13px}
-main{max-width:650px;margin:auto;padding:20px}
-h2{color:#e5bd68;font-size:22px}
-.panel{
- background:#12213b;padding:18px;
- border:1px solid #293c5b;border-radius:16px;
- margin-bottom:18px;
-}
-label{display:block;margin:15px 0 9px;color:#e5bd68}
-textarea,select{
- width:100%;padding:14px;border-radius:10px;
- border:1px solid #43516b;background:#09162b;
- color:white;font-size:16px;
-}
-textarea{height:155px;resize:vertical}
-button{
- border:0;border-radius:10px;padding:14px;
- font-size:16px;font-weight:bold;cursor:pointer;
-}
-.primary{background:#d9ad59;color:#101a2c;width:100%;margin-top:18px}
-.secondary{background:#263957;color:white}
-.actions{display:flex;gap:10px;margin-top:12px}
-.actions button{flex:1}
-.info{color:#aab7ca;font-size:13px;line-height:1.8}
-#status{color:#e5bd68;margin-top:15px;text-align:center}
-footer{text-align:center;color:#8492a8;padding:25px;font-size:13px}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>عاصم AI | تحويل النص إلى صوت</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #081326;
+      color: #fff;
+      font-family: Arial, sans-serif;
+    }
+    header {
+      padding: 22px 18px;
+      background: #101f39;
+      border-bottom: 1px solid #b58b43;
+    }
+    .logo { font-size: 27px; font-weight: bold; color: #e5bd68; }
+    .logo span { color: #fff; }
+    header p { color: #aab7ca; font-size: 13px; }
+    main { max-width: 650px; margin: auto; padding: 20px; }
+    h2 { color: #e5bd68; font-size: 22px; }
+    .panel {
+      background: #12213b;
+      padding: 18px;
+      border: 1px solid #293c5b;
+      border-radius: 16px;
+      margin-bottom: 18px;
+    }
+    label { display: block; margin: 15px 0 9px; color: #e5bd68; }
+    textarea, select {
+      width: 100%;
+      padding: 14px;
+      border-radius: 10px;
+      border: 1px solid #43516b;
+      background: #09162b;
+      color: #fff;
+      font-size: 16px;
+    }
+    textarea { height: 155px; resize: vertical; }
+    button {
+      border: 0;
+      border-radius: 10px;
+      padding: 14px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:disabled { opacity: .6; cursor: not-allowed; }
+    .primary {
+      background: #d9ad59;
+      color: #101a2c;
+      width: 100%;
+      margin-top: 18px;
+    }
+    .secondary { background: #263957; color: #fff; }
+    .google {
+      background: #fff;
+      color: #222;
+      width: 100%;
+      margin-top: 12px;
+    }
+    .info { color: #aab7ca; font-size: 13px; line-height: 1.8; }
+    #status, #loginStatus {
+      color: #e5bd68;
+      margin-top: 15px;
+      text-align: center;
+      overflow-wrap: anywhere;
+    }
+    footer { text-align: center; color: #8492a8; padding: 25px; font-size: 13px; }
+    .hidden { display: none !important; }
+    .actions { display: flex; gap: 10px; margin-top: 12px; }
+    .actions button { flex: 1; }
+  </style>
 </head>
 <body>
+  <header>
+    <div class="logo">عاصم <span>AI</span> 🎙️</div>
+    <p>حوّل كلماتك إلى صوت</p>
+  </header>
 
-<header>
- <div class="logo">عاصم <span>AI</span> 🎙️</div>
- <p>حوّل كلماتك إلى صوت</p>
-</header>
+  <main>
+    <section id="loginPanel" class="panel">
+      <h2>مرحباً بك في عاصم AI</h2>
+      <p class="info">سجّل الدخول بحساب Google للبدء باستخدام المنصة.</p>
+      <button id="loginButton" class="google" type="button" onclick="login()">
+        تسجيل الدخول باستخدام Google
+      </button>
+      <div id="loginStatus" class="info" role="status"></div>
+    </section>
 
-<main>
- <h2>صناعة الصوت بالذكاء الاصطناعي</h2>
+    <section id="appPanel" class="hidden">
+      <div class="panel">
+        <p class="info">تم تسجيل الدخول: <span id="userEmail"></span></p>
+        <button class="secondary" type="button" onclick="logout()">تسجيل الخروج</button>
+      </div>
 
- <div class="panel">
-  <label>اكتب النص</label>
-  <textarea id="text" placeholder="اكتب النص الذي تريد تحويله إلى صوت هنا..."></textarea>
+      <h2>صناعة الصوت بالذكاء الاصطناعي</h2>
+      <div class="panel">
+        <label for="text">اكتب النص</label>
+        <textarea id="text" placeholder="اكتب النص الذي تريد تحويله إلى صوت هنا..."></textarea>
 
-  <label>لغة الصوت</label>
-  <select id="language">
-   <option value="ar-SA">العربية الفصحى</option>
-   <option value="ar-IQ">اللهجة العراقية (إذا توفرت)</option>
-  </select>
+        <label for="language">لغة الصوت</label>
+        <select id="language">
+          <option value="ar-SA">العربية الفصحى</option>
+          <option value="ar-IQ">اللهجة العراقية (إذا توفرت على جهازك)</option>
+        </select>
 
-  <label>اختيار الصوت</label>
-  <select id="voice">
-   <option value="">الصوت الافتراضي</option>
-  </select>
+        <label for="voice">اختيار الصوت</label>
+        <select id="voice">
+          <option value="">الصوت الافتراضي</option>
+        </select>
 
-  <label>سرعة الكلام</label>
-  <select id="speed">
-   <option value="0.8">بطيء</option>
-   <option value="1" selected>طبيعي</option>
-   <option value="1.15">سريع قليلاً</option>
-   <option value="1.3">سريع</option>
-  </select>
+        <label for="speed">سرعة الكلام</label>
+        <select id="speed">
+          <option value="0.8">بطيء</option>
+          <option value="1" selected>طبيعي</option>
+          <option value="1.15">سريع قليلاً</option>
+          <option value="1.3">سريع</option>
+        </select>
 
-  <label>نبرة الصوت</label>
-  <select id="pitch">
-   <option value="0.8">منخفضة</option>
-   <option value="1" selected>طبيعية</option>
-   <option value="1.2">مرتفعة قليلاً</option>
-  </select>
+        <label for="pitch">نبرة الصوت</label>
+        <select id="pitch">
+          <option value="0.8">منخفضة</option>
+          <option value="1" selected>طبيعية</option>
+          <option value="1.2">مرتفعة قليلاً</option>
+        </select>
 
-  <button class="primary" onclick="speak()">▶ تحويل النص إلى صوت</button>
+        <button class="primary" type="button" onclick="speak()">▶ تشغيل الصوت</button>
+        <div class="actions">
+          <button class="secondary" type="button" onclick="pauseSpeech()">إيقاف مؤقت</button>
+          <button class="secondary" type="button" onclick="stopSpeech()">إيقاف</button>
+        </div>
+        <div id="status" role="status">جاهز</div>
+      </div>
+    </section>
 
-  <div class="actions">
-   <button class="secondary" onclick="pause()">إيقاف مؤقت</button>
-   <button class="secondary" onclick="stop()">إيقاف</button>
-  </div>
+    <section class="panel">
+      <h2>عن عاصم AI</h2>
+      <p class="info">
+        منصة عربية لتحويل النصوص إلى أصوات، مع التركيز على العربية الفصحى واللهجة العراقية،
+        والأصوات الوثائقية والسينمائية.
+      </p>
+      <p class="info">
+        تنبيه: التشغيل الحالي يستخدم الأصوات المتاحة في المتصفح. لم يتم ربط محرك SILMA أو
+        تنزيل MP3 أو نظام الرصيد اليومي بعد.
+      </p>
+    </section>
+  </main>
 
-  <div id="status">جاهز لتحويل النص</div>
- </div>
+  <footer>عاصم AI © 2026 | جميع الحقوق محفوظة</footer>
 
- <div class="panel">
-  <h2>رصيدك اليومي</h2>
-  <p id="counter">5 / 5 تحويلات متبقية</p>
-  <p class="info">يتم احتساب التحويلات على هذا الجهاز في هذا الإصدار التجريبي.</p>
- </div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // ضع هنا مفتاح Supabase Publishable فقط. لا تضع Secret key أبداً.
+    const SUPABASE_URL = "https://lmrvmzbpalgdahvlvhxk.supabase.co";
+    const SUPABASE_KEY = "PASTE_YOUR_SUPABASE_PUBLISHABLE_KEY_HERE";
 
- <div class="panel">
-  <h2>عن عاصم AI</h2>
-  <p class="info">
-   منصة عربية لتحويل النصوص إلى أصوات، مع التركيز على العربية الفصحى واللهجة العراقية، والأصوات السينمائية والوثائقية.
-  </p>
- </div>
-</main>
+    let client = null;
 
-<footer>عاصم AI © 2026 | جميع الحقوق محفوظة</footer>
+    function setLoginMessage(message) {
+      document.getElementById("loginStatus").textContent = message;
+    }
 
-<script>
-const synth = window.speechSynthesis;
-let remaining = 5;
-let currentDay = new Date().toDateString();
+    function showApp(user) {
+      document.getElementById("loginPanel").classList.toggle("hidden", !!user);
+      document.getElementById("appPanel").classList.toggle("hidden", !user);
+      if (user) {
+        document.getElementById("userEmail").textContent = user.email || "حساب Google";
+      }
+    }
 
-function loadCount(){
- const savedDay=localStorage.getItem("asimDay");
- if(savedDay!==currentDay){
-  localStorage.setItem("asimDay",currentDay);
-  localStorage.setItem("asimCount","5");
- }
- remaining=Number(localStorage.getItem("asimCount") || 5);
- updateCount();
-}
+    async function login() {
+      if (!client) {
+        setLoginMessage("أضف مفتاح Publishable الصحيح في الكود أولاً.");
+        return;
+      }
+      setLoginMessage("جارٍ فتح تسجيل الدخول...");
+      const { error } = await client.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: "https://asmh72414.github.io/asim-ai/"
+        }
+      });
+      if (error) setLoginMessage("تعذر تسجيل الدخول: " + error.message);
+    }
 
-function updateCount(){
- document.getElementById("counter").textContent=
- remaining+" / 5 تحويلات متبقية";
-}
+    async function logout() {
+      if (!client) return;
+      const { error } = await client.auth.signOut();
+      if (error) {
+        document.getElementById("status").textContent = "تعذر تسجيل الخروج: " + error.message;
+      }
+    }
 
-function loadVoices(){
- const voices=synth.getVoices();
- const select=document.getElementById("voice");
- select.innerHTML='<option value="">الصوت الافتراضي</option>';
- voices.filter(v=>v.lang.toLowerCase().startsWith("ar"))
- .forEach(v=>{
-  const option=document.createElement("option");
-  option.value=v.name;
-  option.textContent=v.name+" ("+v.lang+")";
-  select.appendChild(option);
- });
-}
-function speak(){
- const text=document.getElementById("text").value.trim();
- if(!text){alert("اكتب النص أولاً");return}
- if(remaining<=0){alert("انتهت تحويلات اليوم");return}
- if(!synth){alert("المتصفح لا يدعم تشغيل الصوت");return}
- synth.cancel();
- const msg=new SpeechSynthesisUtterance(text);
- msg.lang=document.getElementById("language").value;
- msg.rate=Number(document.getElementById("speed").value);
- msg.pitch=Number(document.getElementById("pitch").value);
- const selected=document.getElementById("voice").value;
- const voice=synth.getVoices().find(v=>v.name===selected);
- if(voice)msg.voice=voice;
- msg.onstart=()=>{
-  remaining--;
-  localStorage.setItem("asimCount",remaining);
-  updateCount();
-  document.getElementById("status").textContent="يتم تشغيل الصوت...";
- };
- msg.onend=()=>{
-  document.getElementById("status").textContent="اكتمل تشغيل النص";
- };
- msg.onerror=()=>{
-  document.getElementById("status").textContent="تعذر تشغيل الصوت";
- };
- synth.speak(msg);
-}
-function pause(){
- if(synth.speaking)synth.pause();
-}
-function stop(){
- synth.cancel();
- document.getElementById("status").textContent="تم إيقاف الصوت";
-}
-loadCount();
-loadVoices();
-if(synth.onvoiceschanged!==undefined){
- synth.onvoiceschanged=loadVoices;
-}
-</script>
+    async function initializeAuth() {
+      if (!window.supabase || !window.supabase.createClient) {
+        setLoginMessage("تعذر تحميل خدمة تسجيل الدخول. تحقق من اتصال الإنترنت.");
+        return;
+      }
+
+      if (SUPABASE_KEY === "PASTE_YOUR_SUPABASE_PUBLISHABLE_KEY_HERE") {
+        setLoginMessage("الموقع يحتاج إلى إضافة مفتاح Publishable من Supabase قبل تسجيل الدخول.");
+        return;
+      }
+
+      client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+      client.auth.onAuthStateChange((event, session) => {
+        showApp(session && session.user ? session.user : null);
+      });
+
+      const { data, error } = await client.auth.getSession();
+      if (error) {
+        setLoginMessage("تعذر التحقق من تسجيل الدخول: " + error.message);
+        return;
+      }
+      showApp(data.session && data.session.user ? data.session.user : null);
+    }
+
+    const synth = window.speechSynthesis;
+
+    function loadVoices() {
+      const select = document.getElementById("voice");
+      if (!synth) return;
+      select.innerHTML = '<option value="">الصوت الافتراضي</option>';
+      synth.getVoices()
+        .filter(voice => voice.lang.toLowerCase().startsWith("ar"))
+        .forEach(voice => {
+          const option = document.createElement("option");
+          option.value = voice.name;
+          option.textContent = voice.name + " (" + voice.lang + ")";
+          select.appendChild(option);
+        });
+    }
+
+    function speak() {
+      if (!synth) {
+        document.getElementById("status").textContent = "المتصفح لا يدعم تشغيل الصوت.";
+        return;
+      }
+      const text = document.getElementById("text").value.trim();
+      if (!text) {
+        document.getElementById("status").textContent = "اكتب النص أولاً.";
+        return;
+      }
+
+      synth.cancel();
+      const message = new SpeechSynthesisUtterance(text);
+      message.lang = document.getElementById("language").value;
+      message.rate = Number(document.getElementById("speed").value);
+      message.pitch = Number(document.getElementById("pitch").value);
+
+      const selectedName = document.getElementById("voice").value;
+      const selectedVoice = synth.getVoices().find(voice => voice.name === selectedName);
+      if (selectedVoice) message.voice = selectedVoice;
+
+      message.onstart = () => {
+        document.getElementById("status").textContent = "يتم تشغيل الصوت...";
+      };
+      message.onend = () => {
+        document.getElementById("status").textContent = "اكتمل تشغيل النص.";
+      };
+      message.onerror = () => {
+        document.getElementById("status").textContent = "تعذر تشغيل الصوت.";
+      };
+      synth.speak(message);
+    }
+
+    function pauseSpeech() {
+      if (synth && synth.speaking) synth.pause();
+    }
+
+    function stopSpeech() {
+      if (synth) synth.cancel();
+      document.getElementById("status").textContent = "تم إيقاف الصوت.";
+    }
+
+    loadVoices();
+    if (synth && synth.onvoiceschanged !== undefined) {
+      synth.onvoiceschanged = loadVoices;
+    }
+    initializeAuth();
+  </script>
 </body>
 </html>
