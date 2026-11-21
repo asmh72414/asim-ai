@@ -181,28 +181,62 @@ font-size:13px;
 
 <script>
 // إعداد Supabase
+
 const SUPABASE_URL =
 "https://lmrvmzbpalgdahvlvhxk.supabase.co";
 
-const SUPABASE_KEY ="sb_publishable_Rxc1CU3B8Y66QmvkeRuXbg_OBNzh3KG";
+// ضع مفتاح Publishable الخاص بك بين علامتي الاقتباس
+const SUPABASE_KEY = "sb_publishable_Rxc1CU3B8Y66QmvkeRuXbg_OBNzh3KG";
 
 let client = null;
 
-if(SUPABASE_KEY.trim() !== ""){
+if(SUPABASE_KEY.trim() !== "" && !SUPABASE_KEY.includes("ضع_مفتاح")){
 client = supabase.createClient(
 SUPABASE_URL,
 SUPABASE_KEY,
+{
+auth:{
+persistSession:true,
+autoRefreshToken:true,
+detectSessionInUrl:true
+}
+}
 );
 }
 
+// إظهار واجهة التطبيق
+
+function showApp(user){
+
+document.getElementById("loginPanel").classList.add("hidden");
+document.getElementById("appPanel").classList.remove("hidden");
+
+document.getElementById("userEmail").textContent =
+"الحساب: " + (user.email || "");
+
+}
+
+// إظهار واجهة تسجيل الدخول
+
+function showLogin(){
+
+document.getElementById("appPanel").classList.add("hidden");
+document.getElementById("loginPanel").classList.remove("hidden");
+
+}
+
 // تسجيل الدخول
+
 async function login(){
 
 if(!client){
 document.getElementById("loginStatus").textContent =
-"أضف مفتاح Publishable أولاً حتى يعمل تسجيل الدخول.";
+"تأكد من إضافة مفتاح Publishable الصحيح.";
 return;
 }
+
+document.getElementById("loginStatus").textContent =
+"جاري فتح تسجيل الدخول...";
 
 const {error} = await client.auth.signInWithOAuth({
 provider:"google",
@@ -215,40 +249,49 @@ if(error){
 document.getElementById("loginStatus").textContent =
 "حدث خطأ أثناء تسجيل الدخول: " + error.message;
 }
+
 }
 
 // تسجيل الخروج
+
 async function logout(){
 
 if(!client)return;
 
-await client.auth.signOut();
+const {error} = await client.auth.signOut();
 
-document.getElementById("appPanel").classList.add("hidden");
-document.getElementById("loginPanel").classList.remove("hidden");
+if(error){
+document.getElementById("status").textContent =
+"حدث خطأ أثناء تسجيل الخروج.";
+return;
 }
 
-// عرض التطبيق بعد تسجيل الدخول
-function showApp(user){
+showLogin();
 
-document.getElementById("loginPanel").classList.add("hidden");
-document.getElementById("appPanel").classList.remove("hidden");
-
-document.getElementById("userEmail").textContent =
-"الحساب: " + (user.email || "");
 }
 
-// فحص تسجيل الدخول
+// فحص جلسة تسجيل الدخول
+
 async function checkSession(){
 
 if(!client)return;
 
 const {data,error} = await client.auth.getSession();
 
-if(!error && data.session){
+if(error){
+console.error("Session error:",error.message);
+return;
+}
+
+if(data.session){
 showApp(data.session.user);
+}else{
+showLogin();
 }
+
 }
+
+// متابعة تغييرات تسجيل الدخول
 
 if(client){
 
@@ -256,9 +299,9 @@ client.auth.onAuthStateChange((event,session)=>{
 
 if(session){
 showApp(session.user);
-}else{
-document.getElementById("appPanel").classList.add("hidden");
-document.getElementById("loginPanel").classList.remove("hidden");
+
+}else if(event === "SIGNED_OUT"){
+showLogin();
 }
 
 });
@@ -268,6 +311,7 @@ checkSession();
 }
 
 // تحميل الأصوات
+
 function loadVoices(){
 
 const voices = speechSynthesis.getVoices();
@@ -300,6 +344,7 @@ speechSynthesis.onvoiceschanged = loadVoices;
 }
 
 // تشغيل الصوت
+
 function speak(){
 
 const text = document.getElementById("textInput").value.trim();
@@ -362,6 +407,7 @@ speechSynthesis.cancel();
 document.getElementById("status").textContent =
 "تم إيقاف الصوت.";
 }
+
 </script>
 
 </body>
